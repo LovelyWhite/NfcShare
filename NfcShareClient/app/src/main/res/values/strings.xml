@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Nfc Share</string>
+    <string name="service_desc">nfc.share</string>
+    <string name="group_desc">nfc.share</string>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<host-apdu-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:apduServiceBanner="@drawable/icon"
+    android:description="@string/service_desc"
+    android:requireDeviceUnlock="false">
+    <aid-group
+        android:category="payment"
+        android:description="@string/group_desc">
+    </aid-group>
+</host-apdu-service>
+
+
