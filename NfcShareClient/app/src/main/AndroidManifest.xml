@@ -33,13 +33,18 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".service.EmulationService" android:exported="true"
+        <service
+            android:name=".service.EmulationService"
+            android:exported="true"
+            android:foregroundServiceType="connectedDevice"
             android:permission="android.permission.BIND_NFC_SERVICE">
             <intent-filter>
-                <action android:name="android.nfc.cardemulation.action.HOST_APDU_SERVICE"/>
+                <category android:name="android.nfc.cardemulation.category.PAYMENT" />
+                <action android:name="android.nfc.cardemulation.action.HOST_APDU_SERVICE" />
             </intent-filter>
-            <meta-data android:name="android.nfc.cardemulation.host_apdu_service"
-                android:resource="@xml/aid_list"/>
+            <meta-data
+                android:name="android.nfc.cardemulation.host_apdu_service"
+                android:resource="@xml/aid_list" />
         </service>
         <service android:name="org.eclipse.paho.android.service.MqttService" />
     </application>

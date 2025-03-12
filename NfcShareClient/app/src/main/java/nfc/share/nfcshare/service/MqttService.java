@@ -14,6 +14,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import cn.hutool.core.util.HexUtil;
 import nfc.share.nfcshare.model.MqttChannel;
 import nfc.share.nfcshare.model.NfcInfo;
 import nfc.share.nfcshare.Utils;
@@ -28,8 +29,7 @@ public class MqttService {
 
     public void connect(String serverUrl) throws MqttException {
         if (client != null) {
-            connect();
-            return;
+           client.disconnect();
         }
         client = new MqttAndroidClient(context, serverUrl, Utils.clientId);
         client.setCallback(new MqttCallback() {
@@ -45,6 +45,7 @@ public class MqttService {
                 if (cardMessage.getSender().equals(Utils.clientId)) {
                     return;
                 }
+                Utils.addLogs("Received: " + cardMessage.getCardBytes());
                 switch (cardMessage.getChannel()) {
                     case FETCH_CHANNEL:
                         try {
@@ -55,10 +56,8 @@ public class MqttService {
                         }
                         break;
                     case SEND_CHANNEL:
-                        Utils.blockingQueue.offer(cardMessage.getCardBytes());
-                        break;
-                    case LOG_CHANNEL:
-                        Utils.addLogs(cardMessage.getCardBytes());
+                        Utils.emulationService.sendResponseApdu(HexUtil.decodeHex(cardMessage.getCardBytes()));
+//                        Utils.blockingQueue.offer();
                         break;
                 }
             }
@@ -73,8 +72,8 @@ public class MqttService {
     private void connect() throws MqttException {
         MqttConnectOptions options = new MqttConnectOptions();
         options.setAutomaticReconnect(true);
-        options.setConnectionTimeout(60);
-        options.setKeepAliveInterval(60);
+        options.setConnectionTimeout(10);
+        options.setKeepAliveInterval(20);
         options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
         client.connect(options, new IMqttActionListener() {
             @Override
@@ -101,6 +100,7 @@ public class MqttService {
     public void pushMessageToMqtt(MqttChannel channel, String msg) {
         new Thread(() -> {
             try {
+                Utils.addLogs("Sending: " + msg);
                 NfcInfo nfcInfo = NfcInfo.builder().channel(channel).sender(Utils.clientId).cardBytes(msg).build();
                 sendMessage(Utils.Gson.toJson(nfcInfo));
             } catch (Exception e) {

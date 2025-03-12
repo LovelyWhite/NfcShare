@@ -6,6 +6,23 @@
     <aid-group
         android:category="payment"
         android:description="@string/group_desc">
+        <aid-filter android:name="325041592E5359532E4444463031" />
+        <aid-filter android:name="D2760000850101" />
+        <aid-filter android:name="A00000002501" />
+        <aid-filter android:name="A000000121" />
+        <aid-filter android:name="A0000001523010" />
+        <aid-filter android:name="A000000227" />
+        <aid-filter android:name="A00000006501" />
+        <aid-filter android:name="A0000000043060" />
+        <aid-filter android:name="A0000000041010" />
+        <aid-filter android:name="A000000658" />
+        <aid-filter android:name="A0000003330101" />
+        <aid-filter android:name="A0000000031010" />
+        <aid-filter android:name="A000000333010101" />
+        <aid-filter android:name="A000000333010102" />
+        <aid-filter android:name="A000000333010103" />
+        <aid-filter android:name="A000000333010106" />
+        <aid-filter android:name="A000000333010108" />
     </aid-group>
 </host-apdu-service>
 

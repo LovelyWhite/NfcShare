@@ -20,7 +20,6 @@ import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.text.SimpleDateFormat;
 
-import nfc.share.nfcshare.service.EmulationService;
 import nfc.share.nfcshare.service.MqttService;
 import nfc.share.nfcshare.service.NfcService;
 
@@ -35,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
         Utils.mainActivity = this;
         log = findViewById(R.id.log);
         server = findViewById(R.id.ip);
+        server.setText("ws://suxitech.cn:8888");
         SwitchCompat aSwitch = findViewById(R.id.switchSender);
         Button connectServer = findViewById(R.id.join);
         appendLog("Current mode is " + (Utils.isServer ? "Server" : "Client"));
@@ -54,14 +54,11 @@ public class MainActivity extends AppCompatActivity {
                 if (Utils.mqttService == null) {
                     Utils.mqttService = new MqttService(this);
                 }
+                System.out.println(server.getText().toString());
                 Utils.mqttService.connect(server.getText().toString());
             } catch (MqttException e) {
-                return;
             }
-            if (Utils.isServer) {
-                Intent service = new Intent(this, EmulationService.class);
-                startService(service);
-            } else {
+            if (!Utils.isServer) {
                 Utils.nfcService = new NfcService(this);
             }
         });
