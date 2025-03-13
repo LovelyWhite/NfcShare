@@ -11,7 +11,6 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import cn.hutool.core.util.HexUtil;
@@ -29,7 +28,7 @@ public class MqttService {
 
     public void connect(String serverUrl) throws MqttException {
         if (client != null) {
-           client.disconnect();
+            client.disconnect();
         }
         client = new MqttAndroidClient(context, serverUrl, Utils.clientId);
         client.setCallback(new MqttCallback() {
@@ -48,16 +47,11 @@ public class MqttService {
                 Utils.addLogs("Received: " + cardMessage.getCardBytes());
                 switch (cardMessage.getChannel()) {
                     case FETCH_CHANNEL:
-                        try {
-                            String result = Utils.nfcService.sendData(cardMessage.getCardBytes());
-                            pushMessageToMqtt(MqttChannel.SEND_CHANNEL, result);
-                        } catch (IOException e) {
-                            Utils.addLogs("Send data to card failed");
-                        }
+                        String result = Utils.nfcService.sendData(cardMessage.getCardBytes());
+                        pushMessageToMqtt(MqttChannel.SEND_CHANNEL, result);
                         break;
                     case SEND_CHANNEL:
                         Utils.emulationService.sendResponseApdu(HexUtil.decodeHex(cardMessage.getCardBytes()));
-//                        Utils.blockingQueue.offer();
                         break;
                 }
             }
@@ -109,7 +103,7 @@ public class MqttService {
         }).start();
     }
 
-    public void sendMessage(String msg) throws MqttException {
+    private void sendMessage(String msg) throws MqttException {
         MqttMessage message = new MqttMessage();
         message.setPayload(msg.getBytes(StandardCharsets.UTF_8));
         client.publish("message", message);

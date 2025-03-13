@@ -1,7 +1,7 @@
 package nfc.share.nfcshare;
 
+
 import android.annotation.SuppressLint;
-import android.util.Log;
 
 import com.google.gson.Gson;
 
@@ -24,7 +24,6 @@ public class Utils {
     public static EmulationService emulationService;
 
     public static void addLogs(String... strs) {
-        Log.d("TAG111", strs[0]);
         for (String str : strs) {
             mainActivity.appendLog(str);
         }

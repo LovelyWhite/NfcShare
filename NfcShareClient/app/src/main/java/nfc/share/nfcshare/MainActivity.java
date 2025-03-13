@@ -1,6 +1,5 @@
 package nfc.share.nfcshare;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -54,9 +53,8 @@ public class MainActivity extends AppCompatActivity {
                 if (Utils.mqttService == null) {
                     Utils.mqttService = new MqttService(this);
                 }
-                System.out.println(server.getText().toString());
                 Utils.mqttService.connect(server.getText().toString());
-            } catch (MqttException e) {
+            } catch (MqttException ignored) {
             }
             if (!Utils.isServer) {
                 Utils.nfcService = new NfcService(this);

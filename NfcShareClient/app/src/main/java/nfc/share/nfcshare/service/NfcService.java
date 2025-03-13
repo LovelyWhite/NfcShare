@@ -16,12 +16,10 @@ import nfc.share.nfcshare.Utils;
 
 public class NfcService implements NfcAdapter.ReaderCallback {
     private IsoDep isoDep;
-    NfcAdapter nfcAdapter;
-    private String currentCardId = "";
     private Timer cardCheckTimer;
 
     public NfcService(MainActivity context) {
-        nfcAdapter = NfcAdapter.getDefaultAdapter(context);
+        NfcAdapter nfcAdapter = NfcAdapter.getDefaultAdapter(context);
         if (nfcAdapter == null) {
             Utils.addLogs("Not Support NFC");
             return;
@@ -35,7 +33,7 @@ public class NfcService implements NfcAdapter.ReaderCallback {
         if (discoveredTag != null) {
             Utils.blockingQueue.clear();
             try {
-                currentCardId = connectCard(discoveredTag);
+                String cardId = connectCard(discoveredTag);
                 if (cardCheckTimer != null) {
                     cardCheckTimer.cancel();
                 }
@@ -43,48 +41,50 @@ public class NfcService implements NfcAdapter.ReaderCallback {
                 cardCheckTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        try {
-                            sendData(Utils.QUERY_CARD);
-                        } catch (IOException e) {
-                            onTagRemoved();
-                        }
+                        sendData(Utils.QUERY_CARD);
                     }
                 }, 3000, 3000);
-
-                Utils.mqttService.pushMessageToMqtt(LOG_CHANNEL, "Card connected: " + currentCardId);
-            } catch (IOException e) {
-                Utils.addLogs("Connect card failed");
+                Utils.mqttService.pushMessageToMqtt(LOG_CHANNEL, "Card connected: " + cardId);
+            } catch (Exception e) {
+                Utils.addLogs(e.toString());
             }
         }
     }
 
-    private String connectCard(Tag tag) throws IOException {
+    private String connectCard(Tag tag) {
         IsoDep isoDep = IsoDep.get(tag);
         this.isoDep = isoDep;
         if (isoDep == null || isoDep.isConnected()) {
-            Utils.addLogs("Card not support");
             throw new RuntimeException("Card not support");
         }
-        isoDep.connect();
-        isoDep.setTimeout(120000);
+        try {
+            isoDep.setTimeout(120000);
+            isoDep.connect();
+        } catch (Exception e) {
+            throw new RuntimeException("IsoDep connect failed");
+        }
         final String cardId = HexUtil.encodeHexStr(tag.getId());
         String result = sendData(Utils.QUERY_CARD);
         if (result.length() < 4) {
-            Utils.addLogs("Card not support");
             throw new RuntimeException("Card not support");
         }
         return cardId;
     }
 
 
-    public String sendData(String command) throws IOException {
-        byte[] decodeHex = HexUtil.decodeHex(command);
-        return HexUtil.encodeHexStr(this.isoDep != null ? isoDep.transceive(decodeHex) : null);
+    public String sendData(String command) {
+        try {
+            byte[] decodeHex = HexUtil.decodeHex(command);
+            return HexUtil.encodeHexStr(this.isoDep != null ? isoDep.transceive(decodeHex) : null);
+        } catch (Exception e) {
+            onTagRemoved();
+        }
+        return "";
     }
 
     public void onTagRemoved() {
-        Utils.mqttService.pushMessageToMqtt(LOG_CHANNEL, "Card removed");
         Utils.addLogs("Card removed");
+        Utils.mqttService.pushMessageToMqtt(LOG_CHANNEL, "Card removed");
         if (isoDep != null && isoDep.isConnected()) {
             try {
                 isoDep.close();
